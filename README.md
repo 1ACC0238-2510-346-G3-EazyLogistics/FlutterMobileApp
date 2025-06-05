@@ -1,3 +1,3 @@
-# flutter_application_1
+# Logistics Masters Flutter App
 
-A new Flutter project.
+A mobile application developed by EazyLogistics team.

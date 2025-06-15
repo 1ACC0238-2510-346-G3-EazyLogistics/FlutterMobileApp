@@ -1,3 +1,4 @@
+import 'package:LogisticsMasters/features/discover/presentation/blocs/hotel_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:LogisticsMasters/core/theme/color_palette.dart';
@@ -29,7 +30,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => MainPage(userName: state.user.name),
+              builder: (context) => BlocProvider(
+                create: (context) => HotelBloc(),
+                child: MainPage(userName: state.user.name),
+              ),
             ),
           );
         } else if (state is FailureAuthState) {

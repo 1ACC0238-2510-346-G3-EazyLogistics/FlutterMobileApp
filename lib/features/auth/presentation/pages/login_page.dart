@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:LogisticsMasters/core/theme/color_palette.dart';
 import 'package:LogisticsMasters/features/app/main_page.dart';
+import 'package:LogisticsMasters/features/auth/presentation/pages/registration_page.dart';
 import 'package:LogisticsMasters/features/auth/presentation/blocs/auth_bloc.dart';
 import 'package:LogisticsMasters/features/auth/presentation/blocs/auth_event.dart';
 import 'package:LogisticsMasters/features/auth/presentation/blocs/auth_state.dart';
@@ -42,97 +43,144 @@ class _LoginPageState extends State<LoginPage> {
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           final isLoading = state is LoadingAuthState;
-          return Stack(
-            children: [
-              AbsorbPointer(
-                absorbing: isLoading,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        controller: _usernameController,
-                        cursorColor: ColorPalette.primaryColor,
-                        decoration: InputDecoration(
-                          hintText: 'Username',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(
-                              width: 2,
-                              color: ColorPalette.primaryColor,
-                            ),
-                          ),
-                          suffixIcon: const Icon(Icons.person),
+          return Scaffold(
+            body: SafeArea(
+              child: SingleChildScrollView(
+                child: AbsorbPointer(
+                  absorbing: isLoading,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 32),
+                      SizedBox(
+                        height: 180,
+                        child: Image.asset(
+                          "assets/images/logo-blanco-turquesa.jpg",
+                          fit: BoxFit.contain,
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        controller: _passwordController,
-                        cursorColor: ColorPalette.primaryColor,
-                        decoration: InputDecoration(
-                          hintText: 'Password',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          "Let's Login!",
+                          style: TextStyle(
+                            fontSize: 32.0,
+                            fontWeight: FontWeight.bold,
+                            color: ColorPalette.primaryColor,
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(
-                              width: 2,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: TextField(
+                          controller: _usernameController,
+                          cursorColor: ColorPalette.primaryColor,
+                          decoration: InputDecoration(
+                            hintText: "Enter Username",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              borderSide: BorderSide(
+                                color: ColorPalette.primaryColor,
+                                width: 2.0,
+                              ),
+                            ),
+                            suffixIcon: Icon(
+                              Icons.person_outlined,
                               color: ColorPalette.primaryColor,
                             ),
                           ),
-                          suffixIcon: IconButton(
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: TextField(
+                          controller: _passwordController,
+                          obscureText: !_isVisible,
+                          cursorColor: ColorPalette.primaryColor,
+                          decoration: InputDecoration(
+                            hintText: "Enter Password",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              borderSide: BorderSide(
+                                color: ColorPalette.primaryColor,
+                                width: 2.0,
+                              ),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: ColorPalette.primaryColor,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isVisible = !_isVisible;
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: ColorPalette.primaryColor,
+                            ),
                             onPressed: () {
-                              setState(() {
-                                _isVisible = !_isVisible;
-                              });
+                              context.read<AuthBloc>().add(
+                                    SignInEvent(
+                                      username: _usernameController.text,
+                                      password: _passwordController.text,
+                                    ),
+                                  );
                             },
-                            icon: Icon(
-                              _isVisible
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
+                            child: const Text('Sign In'),
                           ),
                         ),
-                        obscureText: !_isVisible,
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: ColorPalette.primaryColor,
-                          ),
-                          onPressed: () {
-                            context.read<AuthBloc>().add(
-                                  SignInEvent(
-                                    username: _usernameController.text,
-                                    password: _passwordController.text,
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text("Don't have an account?"),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const RegistrationPage(),
                                   ),
                                 );
-                          },
-                          child: const Text("Sign in"),
+                              },
+                              child: Text(
+                                "Sign Up",
+                                style: TextStyle(color: ColorPalette.primaryColor),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isLoading)
-                Center(
-                  child: CircularProgressIndicator(
-                    color: ColorPalette.primaryColor,
+                      if (isLoading)
+                        const Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                    ],
                   ),
                 ),
-            ],
+              ),
+            ),
           );
         },
       ),

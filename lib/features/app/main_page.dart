@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:LogisticsMasters/features/discover/presentation/pages/discover_page.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  final String userName;
+  const MainPage({super.key, required this.userName});
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -11,12 +12,20 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
-  final List<Widget> _pages = [
-    DiscoverPage(),
-    Center(child: Text('Favorites')),
-    Center(child: Text('Bookings')),
-    Center(child: Text('Profile')),
-  ];
+
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      DiscoverPage(userName: widget.userName),
+      Center(child: Text('Favorites')),
+      Center(child: Text('Bookings')),
+      Center(child: Text('Profile')),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

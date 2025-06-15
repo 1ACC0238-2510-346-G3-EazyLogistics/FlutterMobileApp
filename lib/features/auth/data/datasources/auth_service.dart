@@ -22,4 +22,40 @@ class AuthService {
       throw Exception('Failed to login');
     
   }
+
+  Future<User> register(
+    String firstName,
+    String lastName,
+    String email,
+    String username,
+    String password,
+  ) async {
+    final uri = Uri.parse('https://dummyjson.com/users/add');
+    final body = {
+      "firstName": firstName,
+      "lastName": lastName,
+      "email": email,
+      "username": username,
+      "password": password,
+    };
+
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final json = jsonDecode(response.body);
+      return User(
+        id: json['id'],
+        email: json['email'],
+        username: json['username'],
+        image: json['image'] ?? '',
+        name: "${json['firstName']} ${json['lastName']}",
+      );
+    } else {
+      throw Exception('Failed to register');
+    }
+  }
 }

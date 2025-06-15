@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:LogisticsMasters/features/auth/login_page.dart';
+import 'package:LogisticsMasters/features/auth/presentation/pages/login_page.dart';
 
 void main() {
   runApp(const MainApp());

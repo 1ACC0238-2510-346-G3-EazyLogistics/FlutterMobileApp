@@ -4,7 +4,12 @@ import 'package:LogisticsMasters/core/theme/color_palette.dart';
 
 class BannerView extends StatelessWidget {
   final String userName;
-  const BannerView({super.key, required this.userName});
+  final String userEmail;
+  const BannerView({
+    super.key,
+    required this.userName,
+    required this.userEmail,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +29,12 @@ class BannerView extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            Container(
-              color: Colors.black.withOpacity(0.3),
-            ),
+            Container(color: Colors.black.withOpacity(0.3)),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 24.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -53,7 +59,7 @@ class BannerView extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    "Hey, $userName!\nTell us where you want to go",
+                    "Hey, $userName!\n$userEmail",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 26,
@@ -67,7 +73,10 @@ class BannerView extends StatelessWidget {
                       filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 4,
+                        ),
                         color: Colors.white.withOpacity(0.2),
                         child: Row(
                           children: [
@@ -75,14 +84,19 @@ class BannerView extends StatelessWidget {
                             const SizedBox(width: 12),
                             Expanded(
                               child: TextField(
-                                style: const TextStyle(color: Colors.white, fontSize: 16),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
                                 cursorColor: ColorPalette.primaryColor,
                                 decoration: const InputDecoration(
                                   hintText: "Search places",
                                   hintStyle: TextStyle(color: Colors.white70),
                                   border: InputBorder.none,
                                   isCollapsed: true,
-                                  contentPadding: EdgeInsets.symmetric(vertical: 10),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
                                 ),
                               ),
                             ),

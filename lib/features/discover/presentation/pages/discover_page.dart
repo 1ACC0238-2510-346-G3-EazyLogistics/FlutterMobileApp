@@ -7,28 +7,39 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DiscoverPage extends StatefulWidget {
   final String userName;
-  const DiscoverPage({super.key, required this.userName});
+  final String userEmail;
+  const DiscoverPage({
+    super.key,
+    required this.userName,
+    required this.userEmail,
+  });
 
   @override
   State<DiscoverPage> createState() => _DiscoverPageState();
 }
 
 class _DiscoverPageState extends State<DiscoverPage> {
-@override
+  @override
   void initState() {
     super.initState();
     context.read<HotelBloc>().add(GetHotels());
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
-          BannerView(userName: widget.userName),
-          // Info de hoteles 
-          Text("Best Hotels", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: ColorPalette.primaryColor )),
+          BannerView(userName: widget.userName, userEmail: widget.userEmail),
+          // Info de hoteles
+          Text(
+            "Best Hotels",
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: ColorPalette.primaryColor,
+            ),
+          ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),

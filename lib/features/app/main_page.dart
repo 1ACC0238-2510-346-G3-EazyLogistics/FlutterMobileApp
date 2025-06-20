@@ -15,22 +15,39 @@ class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
   late final List<Widget> _pages;
+  late String _userName;
+  late String _userEmail;
 
   @override
   void initState() {
     super.initState();
+    _userName = widget.userName;
+    _userEmail = '';
     _pages = [
-      DiscoverPage(userName: widget.userName),
+      DiscoverPage(userName: _userName, userEmail: _userEmail),
       Center(child: Text('Favorites')),
       Center(child: Text('Bookings')),
-      ProfilePage(),
+      ProfilePage(
+        name: _userName,
+        email: _userEmail,
+        onProfileChanged: (name, email) {
+          setState(() {
+            _userName = name;
+            _userEmail = email;
+            _pages[0] = DiscoverPage(
+              userName: _userName,
+              userEmail: _userEmail,
+            );
+          });
+        },
+      ),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: _pages[_selectedIndex]),
+      body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (value) {

@@ -7,9 +7,11 @@ import 'package:LogisticsMasters/features/app/main_page.dart';
 import 'package:LogisticsMasters/features/auth/presentation/blocs/auth_bloc.dart';
 import 'package:LogisticsMasters/features/auth/presentation/blocs/auth_event.dart';
 import 'package:LogisticsMasters/features/auth/presentation/blocs/auth_state.dart';
+import 'package:LogisticsMasters/features/auth/presentation/admin_welcome_page.dart';
 
 class RegistrationPage extends StatefulWidget {
-  const RegistrationPage({super.key});
+  final bool isAdmin;
+  const RegistrationPage({super.key, this.isAdmin = false});
 
   @override
   State<RegistrationPage> createState() => _RegistrationPageState();
@@ -21,25 +23,38 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _hotelNameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is SuccessAuthState) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BlocProvider(
-                create: (context) => HotelBloc(),
-                child: MainPage(userName: state.user.name),
+          if (widget.isAdmin) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AdminWelcomePage(
+                  adminName: _usernameController.text,
+                  hotelName: _hotelNameController.text,
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                  create: (context) => HotelBloc(),
+                  child: MainPage(userName: state.user.name),
+                ),
+              ),
+            );
+          }
         } else if (state is FailureAuthState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.errorMessage)));
         }
       },
       child: BlocBuilder<AuthBloc, AuthState>(
@@ -176,6 +191,28 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           ),
                         ),
                       ),
+                      if (widget.isAdmin) ...[
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: TextField(
+                            controller: _hotelNameController,
+                            cursorColor: ColorPalette.primaryColor,
+                            decoration: InputDecoration(
+                              hintText: "Hotel name",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                                borderSide: BorderSide(
+                                  color: ColorPalette.primaryColor,
+                                  width: 2.0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: SizedBox(
@@ -183,7 +220,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: ColorPalette.primaryColor,
-                              padding: const EdgeInsets.symmetric(vertical: 16.0),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16.0,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
@@ -196,12 +235,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   email: _emailController.text,
                                   username: _usernameController.text,
                                   password: _passwordController.text,
+                                  hotelName: widget.isAdmin
+                                      ? _hotelNameController.text
+                                      : '',
                                 ),
                               );
                             },
                             child: const Text(
                               "Register",
-                              style: TextStyle(fontSize: 18.0, color: Colors.white),
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -216,21 +261,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               onPressed: () {
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                                  MaterialPageRoute(
+                                    builder: (context) => const LoginPage(),
+                                  ),
                                 );
                               },
                               child: Text(
                                 "Login",
-                                style: TextStyle(color: ColorPalette.primaryColor),
+                                style: TextStyle(
+                                  color: ColorPalette.primaryColor,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
                       if (isLoading)
-                        const Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        const Center(child: CircularProgressIndicator()),
                     ],
                   ),
                 ),
@@ -249,6 +296,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     _emailController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
+    _hotelNameController.dispose();
     super.dispose();
   }
 }

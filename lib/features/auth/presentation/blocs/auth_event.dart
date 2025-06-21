@@ -15,6 +15,7 @@ class RegisterEvent extends AuthEvent {
   final String email;
   final String username;
   final String password;
+  final String hotelName;
 
   const RegisterEvent({
     required this.firstName,
@@ -22,5 +23,6 @@ class RegisterEvent extends AuthEvent {
     required this.email,
     required this.username,
     required this.password,
+    required this.hotelName,
   });
 }

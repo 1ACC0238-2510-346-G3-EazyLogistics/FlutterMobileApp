@@ -1,10 +1,14 @@
-class Hotel{
+class Hotel {
   final String id;
   final String name;
   final String description;
   final String imageUrl;
   final double rating;
   final int pricePerNight;
+  final String country;
+  final String city;
+  final String cityImageUrl;
+  final int popularity;
   final List<HotelReview> reviews;
 
   Hotel({
@@ -14,6 +18,10 @@ class Hotel{
     required this.imageUrl,
     required this.rating,
     required this.pricePerNight,
+    required this.country,
+    required this.city,
+    required this.cityImageUrl,
+    required this.popularity,
     required this.reviews,
   });
 }

@@ -2,13 +2,21 @@ import 'package:LogisticsMasters/features/discover/domain/entities/hotel.dart';
 import 'package:flutter/material.dart';
 
 class HotelCardViewVertical extends StatelessWidget {
-  const HotelCardViewVertical({super.key, required this.hotel});
   final Hotel hotel;
+  final double imageWidth;
+  final double imageHeight;
+
+  const HotelCardViewVertical({
+    super.key,
+    required this.hotel,
+    this.imageWidth = 240,
+    this.imageHeight = 140,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 240, // Ancho fijo para todas las cards
+      width: imageWidth,
       child: Card(
         elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -25,8 +33,8 @@ class HotelCardViewVertical extends StatelessWidget {
                   ),
                   child: Image.network(
                     hotel.imageUrl,
-                    height: 140, // Altura fija menor para evitar overflow
-                    width: 240,   // Ancho fijo igual al SizedBox
+                    height: imageHeight,
+                    width: imageWidth,
                     fit: BoxFit.cover,
                   ),
                 ),

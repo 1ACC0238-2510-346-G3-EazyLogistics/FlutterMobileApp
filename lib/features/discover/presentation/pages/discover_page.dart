@@ -61,7 +61,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
                   if (state is LoadingHotelState) {
                     return const Center(child: CircularProgressIndicator());
                   } else if (state is LoadedHotelState) {
-                    final hotels = state.hotels;
+                    final hotels = state.hotels.where((hotel) => hotel.rating > 4.6).toList();
                     return ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: hotels.length,

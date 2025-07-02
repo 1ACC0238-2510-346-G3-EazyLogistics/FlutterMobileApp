@@ -1,3 +1,4 @@
+import 'package:LogisticsMasters/features/discover/presentation/pages/hotel_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:LogisticsMasters/features/discover/domain/entities/hotel.dart';
 import 'hotel_card_view_horizontal.dart';
@@ -23,7 +24,12 @@ class HotelListViewHorizontal extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: GestureDetector(
               onTap: () {
-                // Navegar al detalle
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HotelDetailPage(hotel: hotel),
+                  ),
+                );
               },
               child: HotelCardViewHorizontal(hotel: hotel),
             ),

@@ -1,3 +1,4 @@
+import 'package:LogisticsMasters/features/discover/presentation/pages/hotel_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:LogisticsMasters/features/discover/domain/entities/hotel.dart';
 import '../widgets/hotel_card_view_vertical.dart';
@@ -28,16 +29,36 @@ class HotelSeeAllPage extends StatelessWidget {
           if (cardType == CardType.vertical) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: HotelCardViewVertical(
-                hotel: hotel,
-                imageWidth: 340, 
-                imageHeight: 160, 
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HotelDetailPage(hotel: hotel),
+                    ),
+                  );
+                },
+                child: HotelCardViewVertical(
+                  hotel: hotel,
+                  imageWidth: 340,
+                  imageHeight: 160,
+                ),
               ),
             );
           } else {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: HotelCardViewHorizontal(hotel: hotel),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HotelDetailPage(hotel: hotel),
+                    ),
+                  );
+                },
+                child: HotelCardViewHorizontal(hotel: hotel),
+              ),
             );
           }
         },

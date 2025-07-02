@@ -9,6 +9,7 @@ import 'package:LogisticsMasters/features/discover/presentation/widgets/banner_v
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:LogisticsMasters/features/discover/presentation/pages/hotel_see_all_page.dart';
 import 'package:LogisticsMasters/features/discover/data/models/card_type.dart';
+import 'package:LogisticsMasters/features/discover/presentation/pages/hotel_detail_page.dart';
 
 class DiscoverPage extends StatefulWidget {
   final String userName;
@@ -89,7 +90,17 @@ class _DiscoverPageState extends State<DiscoverPage> {
                         final hotel = hotels[index];
                         return Padding(
                           padding: const EdgeInsets.only(left: 16.0),
-                          child: HotelCardViewVertical(hotel: hotel),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => HotelDetailPage(hotel: hotel),
+                                ),
+                              );
+                            },
+                            child: HotelCardViewVertical(hotel: hotel),
+                          ),
                         );
                       },
                     );
@@ -153,7 +164,17 @@ class _DiscoverPageState extends State<DiscoverPage> {
                       final hotel = hotels[index];
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 6.0),
-                        child: HotelCardViewHorizontal(hotel: hotel),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => HotelDetailPage(hotel: hotel),
+                              ),
+                            );
+                          },
+                          child: HotelCardViewHorizontal(hotel: hotel),
+                        ),
                       );
                     },
                   );

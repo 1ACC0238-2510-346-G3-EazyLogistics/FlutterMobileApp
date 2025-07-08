@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 
 class HotelService {
   Future<List<Hotel>> fetchHotels() async {
-    final Uri uri = Uri.parse('https://big-vivid-pajama.glitch.me/hotels');
+    final Uri uri = Uri.parse('https://logisticsmasters.onrender.com/hotels');
     http.Response response = await http.get(uri);
     if (response.statusCode == HttpStatus.ok) {
       List maps = jsonDecode(response.body);

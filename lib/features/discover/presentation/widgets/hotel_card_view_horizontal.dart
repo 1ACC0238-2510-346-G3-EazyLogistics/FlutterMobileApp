@@ -1,5 +1,11 @@
+import 'package:LogisticsMasters/core/theme/color_palette.dart';
+import 'package:LogisticsMasters/features/favorites/domain/entities/favorite_hotel.dart';
+import 'package:LogisticsMasters/features/favorites/presentation/blocs/favorite_bloc.dart';
+import 'package:LogisticsMasters/features/favorites/presentation/blocs/favorite_event.dart';
+import 'package:LogisticsMasters/features/favorites/presentation/blocs/favorite_state.dart';
 import 'package:flutter/material.dart';
 import 'package:LogisticsMasters/features/discover/domain/entities/hotel.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HotelCardViewHorizontal extends StatelessWidget {
   final Hotel hotel;
@@ -7,10 +13,13 @@ class HotelCardViewHorizontal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Verificar favorito al construir el widget
+    context.read<FavoriteBloc>().add(CheckIsFavoriteEvent(id: hotel.id));
+    
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -30,12 +39,57 @@ class HotelCardViewHorizontal extends StatelessWidget {
                 Positioned(
                   top: 8,
                   right: 8,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.favorite_border, color: Colors.grey),
+                  child: BlocBuilder<FavoriteBloc, FavoriteState>(
+                    buildWhen: (previous, current) {
+                      // Solo reconstruir cuando cambia el estado de favorito para este hotel
+                      return (current is IsFavoriteState && current.id == hotel.id) ||
+                             (current is LoadedFavoriteState);
+                    },
+                    builder: (context, state) {
+                      bool isFavorite = false;
+                      
+                      if (state is IsFavoriteState && state.id == hotel.id) {
+                        isFavorite = state.isFavorite;
+                      } else if (state is LoadedFavoriteState) {
+                        isFavorite = state.favorites.any((h) => h.id == hotel.id);
+                      }
+                      
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.8),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          iconSize: 20,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border, 
+                            color: isFavorite ? ColorPalette.primaryColor : Colors.grey,
+                          ),
+                          onPressed: () {
+                            if (isFavorite) {
+                              context.read<FavoriteBloc>().add(
+                                RemoveFavoriteEvent(id: hotel.id)
+                              );
+                            } else {
+                              final favoriteHotel = FavoriteHotel(
+                                id: hotel.id,
+                                name: hotel.name,
+                                imageUrl: hotel.imageUrl,
+                                rating: hotel.rating,
+                                pricePerNight: hotel.pricePerNight,
+                                country: hotel.country,
+                                city: hotel.city,
+                              );
+                              context.read<FavoriteBloc>().add(
+                                AddFavoriteEvent(favoriteHotel: favoriteHotel)
+                              );
+                            }
+                          },
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],

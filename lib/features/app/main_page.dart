@@ -1,6 +1,7 @@
 import 'package:LogisticsMasters/core/theme/color_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:LogisticsMasters/features/discover/presentation/pages/discover_page.dart';
+import 'package:LogisticsMasters/features/favorites/presentation/pages/favorites_page.dart';
 
 class MainPage extends StatefulWidget {
   final String userName;
@@ -20,7 +21,7 @@ class _MainPageState extends State<MainPage> {
     super.initState();
     _pages = [
       DiscoverPage(userName: widget.userName),
-      Center(child: Text('Favorites')),
+      const FavoritesPage(),
       Center(child: Text('Bookings')),
       Center(child: Text('Profile')),
     ];
@@ -30,8 +31,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(child: _pages[_selectedIndex]),
-      bottomNavigationBar: 
-      BottomNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (value) {
           setState(() {
@@ -40,28 +40,27 @@ class _MainPageState extends State<MainPage> {
         },
         selectedItemColor: ColorPalette.primaryColor,
         type: BottomNavigationBarType.fixed,
-        items:[
-        BottomNavigationBarItem(
-          activeIcon:Icon(Icons.explore),
-          icon: Icon(Icons.explore_outlined), 
-          label: 'Discover'), 
-        BottomNavigationBarItem(
-          activeIcon:Icon(Icons.favorite),
-          icon: Icon(Icons.favorite_outlined), 
-          label: 'Favorites'),
-        BottomNavigationBarItem(
-          activeIcon:Icon(Icons.book),
-          icon: Icon(Icons.book_outlined,), 
-          label: 'Bookings'),
-        BottomNavigationBarItem(
-          activeIcon:Icon(Icons.person),
-          icon: Icon(Icons.person_outlined), 
-          label: 'Profile'),
-      ]
+        items: [
+          BottomNavigationBarItem(
+              activeIcon: Icon(Icons.explore),
+              icon: Icon(Icons.explore_outlined),
+              label: 'Discover'),
+          BottomNavigationBarItem(
+              activeIcon: Icon(Icons.favorite),
+              icon: Icon(Icons.favorite_outlined),
+              label: 'Favorites'),
+          BottomNavigationBarItem(
+              activeIcon: Icon(Icons.book),
+              icon: Icon(
+                Icons.book_outlined,
+              ),
+              label: 'Bookings'),
+          BottomNavigationBarItem(
+              activeIcon: Icon(Icons.person),
+              icon: Icon(Icons.person_outlined),
+              label: 'Profile'),
+        ],
       ),
-
-
     );
-    
   }
 }

@@ -1,5 +1,11 @@
+import 'package:LogisticsMasters/core/theme/color_palette.dart';
 import 'package:LogisticsMasters/features/discover/domain/entities/hotel.dart';
+import 'package:LogisticsMasters/features/favorites/domain/entities/favorite_hotel.dart';
+import 'package:LogisticsMasters/features/favorites/presentation/blocs/favorite_bloc.dart';
+import 'package:LogisticsMasters/features/favorites/presentation/blocs/favorite_event.dart';
+import 'package:LogisticsMasters/features/favorites/presentation/blocs/favorite_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HotelCardViewVertical extends StatelessWidget {
   final Hotel hotel;
@@ -15,6 +21,8 @@ class HotelCardViewVertical extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<FavoriteBloc>().add(CheckIsFavoriteEvent(id: hotel.id));
+    
     return SizedBox(
       width: imageWidth,
       child: Card(
@@ -41,15 +49,53 @@ class HotelCardViewVertical extends StatelessWidget {
                 Positioned(
                   top: 12,
                   right: 12,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.favorite_border),
-                      onPressed: () {},
-                    ),
+                  child: BlocBuilder<FavoriteBloc, FavoriteState>(
+                    buildWhen: (previous, current) {
+                      return (current is IsFavoriteState && current.id == hotel.id) ||
+                             (current is LoadedFavoriteState);
+                    },
+                    builder: (context, state) {
+                      bool isFavorite = false;
+                      
+                      if (state is IsFavoriteState && state.id == hotel.id) {
+                        isFavorite = state.isFavorite;
+                      } else if (state is LoadedFavoriteState) {
+                        isFavorite = state.favorites.any((h) => h.id == hotel.id);
+                      }
+                      
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.8),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border, 
+                            color: isFavorite ? ColorPalette.primaryColor : Colors.grey,
+                          ),
+                          onPressed: () {
+                            if (isFavorite) {
+                              context.read<FavoriteBloc>().add(
+                                RemoveFavoriteEvent(id: hotel.id)
+                              );
+                            } else {
+                              final favoriteHotel = FavoriteHotel(
+                                id: hotel.id,
+                                name: hotel.name,
+                                imageUrl: hotel.imageUrl,
+                                rating: hotel.rating,
+                                pricePerNight: hotel.pricePerNight,
+                                country: hotel.country,
+                                city: hotel.city,
+                              );
+                              context.read<FavoriteBloc>().add(
+                                AddFavoriteEvent(favoriteHotel: favoriteHotel)
+                              );
+                            }
+                          },
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],

@@ -1,5 +1,6 @@
 import 'package:LogisticsMasters/core/theme/color_palette.dart';
 import 'package:LogisticsMasters/features/discover/domain/entities/hotel.dart';
+import 'package:LogisticsMasters/features/discover/presentation/widgets/reviews_list.dart';
 import 'package:LogisticsMasters/features/favorites/domain/entities/favorite_hotel.dart';
 import 'package:LogisticsMasters/features/favorites/presentation/blocs/favorite_bloc.dart';
 import 'package:LogisticsMasters/features/favorites/presentation/blocs/favorite_event.dart';
@@ -179,6 +180,26 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       style: const TextStyle(fontSize: 16, color: Colors.black87),
                     ),
                     const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ),
+            // En la sección de reviews de HotelDetailPage
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Reviews",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ReviewsList(reviews: widget.hotel.reviews),
                   ],
                 ),
               ),

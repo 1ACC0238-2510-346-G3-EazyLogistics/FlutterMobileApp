@@ -1,4 +1,5 @@
 import 'package:LogisticsMasters/core/theme/color_palette.dart';
+import 'package:LogisticsMasters/features/bookings/presentation/pages/date_selection_page.dart';
 import 'package:LogisticsMasters/features/discover/domain/entities/hotel.dart';
 import 'package:LogisticsMasters/features/discover/presentation/widgets/reviews_list.dart';
 import 'package:LogisticsMasters/features/favorites/domain/entities/favorite_hotel.dart';
@@ -251,7 +252,12 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                 ),
                 onPressed: () {
-                  // Acción para seleccionar fecha
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DateSelectionPage(hotel: widget.hotel),
+                    ),
+                  );
                 },
                 child: const Text(
                   "Select Date",

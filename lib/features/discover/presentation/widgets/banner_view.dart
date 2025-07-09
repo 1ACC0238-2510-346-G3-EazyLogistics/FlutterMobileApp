@@ -14,21 +14,68 @@ class BannerView extends StatefulWidget {  // Cambiado a StatefulWidget
   State<BannerView> createState() => _BannerViewState();
 }
 
-class _BannerViewState extends State<BannerView> {
+class _BannerViewState extends State<BannerView> with WidgetsBindingObserver {
   final FocusNode _searchFocusNode = FocusNode();
+  final TextEditingController _searchController = TextEditingController(); // Nuevo
+
+  @override
+  void initState() {
+    super.initState();
+    // Registrar observer para detectar cambios en el ciclo de vida
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   @override
   void dispose() {
-    _searchFocusNode.dispose();  // Liberar recursos
+    // Asegurarse de que el focus node se disponga correctamente
+    _searchFocusNode.dispose();
+    _searchController.dispose(); // Importante para evitar memory leaks
+    // Eliminar el observer
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Cuando la app pasa a segundo plano o se reactiva
+    if (state == AppLifecycleState.inactive || 
+        state == AppLifecycleState.paused) {
+      _searchFocusNode.unfocus();
+      _searchController.clear(); // Limpiar al salir de la app
+    }
+    super.didChangeAppLifecycleState(state);
+  }
+
+  // Nuevo método para forzar la pérdida de foco
+  void _clearFocus() {
+    if (_searchFocusNode.hasFocus) {
+      _searchFocusNode.unfocus();
+    }
+  }
+
+  void _clearSearch() {
+    _searchController.clear(); // Método para limpiar el texto
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Asegurarse de que el campo pierda el foco cuando cambien las dependencias
+    _clearFocus();
+    _clearSearch(); // Limpiar cuando cambian las dependencias
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Verificar y quitar el foco cada vez que se construye el widget
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _clearFocus();
+    });
+
     return GestureDetector(
       // Cerrar teclado al tocar fuera del campo
       onTap: () {
-        FocusScope.of(context).unfocus();
+        _clearFocus();
       },
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
@@ -98,12 +145,17 @@ class _BannerViewState extends State<BannerView> {
                               Expanded(
                                 child: TextField(
                                   focusNode: _searchFocusNode,
+                                  controller: _searchController, // Asignar el controller
                                   style: const TextStyle(color: Colors.white, fontSize: 16),
                                   cursorColor: ColorPalette.primaryColor,
+                                  
+                                  autofocus: false,
+                                  
+                                  enableInteractiveSelection: true,
+                                  
                                   decoration: const InputDecoration(
                                     hintText: "Search places",
                                     hintStyle: TextStyle(color: Colors.white70),
-                                    // Eliminar todas las líneas
                                     border: InputBorder.none,
                                     focusedBorder: InputBorder.none,
                                     enabledBorder: InputBorder.none,
@@ -128,7 +180,10 @@ class _BannerViewState extends State<BannerView> {
                                           MaterialPageRoute(
                                             builder: (context) => SearchResultsPage(query: query),
                                           ),
-                                        );
+                                        ).then((_) {
+                                          // Limpiar el texto cuando regresamos de la página de resultados
+                                          _clearSearch();
+                                        });
                                       });
                                     }
                                   },

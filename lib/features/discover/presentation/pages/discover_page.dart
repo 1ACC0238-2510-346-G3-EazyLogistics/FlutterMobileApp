@@ -19,11 +19,33 @@ class DiscoverPage extends StatefulWidget {
   State<DiscoverPage> createState() => _DiscoverPageState();
 }
 
-class _DiscoverPageState extends State<DiscoverPage> {
+class _DiscoverPageState extends State<DiscoverPage> with RouteAware {
+  RouteObserver<PageRoute>? _routeObserver;
+
   @override
   void initState() {
     super.initState();
     context.read<HotelBloc>().add(GetHotels());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _routeObserver = RouteObserver<PageRoute>();
+    _routeObserver?.subscribe(this, ModalRoute.of(context) as PageRoute);
+  }
+
+  @override
+  void didPopNext() {
+    // Cuando vuelves a esta página, asegúrate de que ningún elemento tenga foco
+    FocusScope.of(context).unfocus();
+    super.didPopNext();
+  }
+
+  @override
+  void dispose() {
+    _routeObserver?.unsubscribe(this);
+    super.dispose();
   }
 
   @override

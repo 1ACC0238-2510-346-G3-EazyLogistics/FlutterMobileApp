@@ -14,6 +14,7 @@ class HotelRepository {
     }
   }
 
+  // Obtener hoteles populares
   Future<List<Hotel>> getPopularHotels() async {
     try {
       final hotels = await _service.fetchHotels();
@@ -27,6 +28,7 @@ class HotelRepository {
     }
   }
 
+  // Obtener hoteles recomendados
   Future<List<Hotel>> getRecommendedHotels() async {
     try {
       final hotels = await _service.fetchHotels();
@@ -40,6 +42,7 @@ class HotelRepository {
     }
   }
 
+  // Obtener un hotel por su ID
   Future<Hotel?> getHotelById(String id) async {
     try {
       final allHotels = await _service.fetchHotels();
@@ -53,6 +56,7 @@ class HotelRepository {
     }
   }
 
+  // Buscar hoteles por texto
   Future<List<Hotel>> searchHotels(String query) async {
     try {
       final hotels = await _service.fetchHotels();

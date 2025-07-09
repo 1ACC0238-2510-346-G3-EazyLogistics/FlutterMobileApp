@@ -1,4 +1,7 @@
 import 'package:LogisticsMasters/features/auth/presentation/blocs/auth_bloc.dart';
+import 'package:LogisticsMasters/features/discover/data/repositories/hotel_repository.dart';
+import 'package:LogisticsMasters/features/discover/presentation/blocs/hotel_bloc.dart';
+import 'package:LogisticsMasters/features/discover/presentation/blocs/search_bloc.dart';
 import 'package:LogisticsMasters/features/favorites/data/repositories/favorite_hotel_repository.dart';
 import 'package:LogisticsMasters/features/favorites/presentation/blocs/favorite_bloc.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +25,16 @@ class MainApp extends StatelessWidget {
         BlocProvider<FavoriteBloc>(
           create: (context) => FavoriteBloc(
             repository: FavoriteHotelRepository(),
+          ),
+        ),
+        BlocProvider<HotelBloc>(
+          create: (context) => HotelBloc(
+            repository: HotelRepository(),
+          ),
+        ),
+        BlocProvider<SearchBloc>(
+          create: (context) => SearchBloc(
+            repository: HotelRepository(),
           ),
         ),
       ],

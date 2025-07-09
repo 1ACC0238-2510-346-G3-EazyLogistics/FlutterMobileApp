@@ -1,3 +1,4 @@
+import 'package:LogisticsMasters/features/discover/data/repositories/hotel_repository.dart';
 import 'package:LogisticsMasters/features/discover/presentation/blocs/hotel_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,7 +30,9 @@ class _LoginPageState extends State<LoginPage> {
             context,
             MaterialPageRoute(
               builder: (context) => BlocProvider(
-                create: (context) => HotelBloc(),
+                create: (context) => HotelBloc(
+                  repository: HotelRepository(),
+                ),
                 child: MainPage(userName: state.user.name),
               ),
             ),

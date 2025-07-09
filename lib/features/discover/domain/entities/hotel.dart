@@ -29,11 +29,15 @@ class Hotel {
 class HotelReview {
   final String username;
   final String comment;
-  final double rating;
+  final int rating;
+  final String profilePicture;
+  final String ratingDate;
 
   HotelReview({
     required this.username,
     required this.comment,
     required this.rating,
+    required this.profilePicture,
+    required this.ratingDate,
   });
 }

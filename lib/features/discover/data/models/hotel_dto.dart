@@ -66,19 +66,25 @@ class HotelDto {
 class HotelReviewDto {
   final String username;
   final String comment;
-  final double rating;
+  final int rating;
+  final String profilePicture;
+  final String ratingDate;
 
   const HotelReviewDto({
     required this.username,
     required this.comment,
     required this.rating,
+    required this.profilePicture,
+    required this.ratingDate,
   });
 
   factory HotelReviewDto.fromJson(Map<String, dynamic> json) {
     return HotelReviewDto(
       username: json['userName'] as String? ?? '',
       comment: json['comment'] as String? ?? '',
-      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      rating: json['rating'] as int? ?? 0,
+      profilePicture: json['profilePicture'] as String? ?? 'https://randomuser.me/api/portraits/lego/1.jpg',
+      ratingDate: json['ratingDate'] as String? ?? '',
     );
   }
 
@@ -87,6 +93,8 @@ class HotelReviewDto {
       username: username,
       comment: comment,
       rating: rating,
+      profilePicture: profilePicture,
+      ratingDate: ratingDate,
     );
   }
 }

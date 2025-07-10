@@ -47,7 +47,7 @@ class BookItemDto {
 
   factory BookItemDto.fromJson(Map<String, dynamic> json) {
     return BookItemDto(
-      id: json['id'] != null ? json['id'].toString() : null,
+      id: json['id']?.toString(),
       hotelId: json['hotelId'],
       userId: json['userId'],
       hotelName: json['hotelName'],
@@ -72,25 +72,25 @@ class BookItemDto {
 
   BookItem toDomain() {
     return BookItem(
-      id: this.id,
-      hotelId: this.hotelId,
-      hotelName: this.hotelName,
-      hotelImage: this.hotelImage,
-      location: this.location,
-      checkInDate: DateTime.parse(this.checkInDate),
-      checkOutDate: DateTime.parse(this.checkOutDate),
-      adults: int.parse(this.adults),
-      children: int.parse(this.children),
-      infants: int.parse(this.infants),
-      pricePerNight: double.parse(this.pricePerNight),
-      nights: int.parse(this.nights),
-      discount: double.parse(this.discount),
-      taxes: double.parse(this.taxes),
-      totalPrice: double.parse(this.totalPrice),
-      paymentMethod: this.paymentMethod,
-      isPaid: this.isPaid.toLowerCase() == 'true',
-      bookingDate: DateTime.parse(this.bookingDate),
-      status: this.status,
+      id: id,
+      hotelId: hotelId,
+      hotelName: hotelName,
+      hotelImage: hotelImage,
+      location: location,
+      checkInDate: DateTime.parse(checkInDate),
+      checkOutDate: DateTime.parse(checkOutDate),
+      adults: int.parse(adults),
+      children: int.parse(children),
+      infants: int.parse(infants),
+      pricePerNight: double.parse(pricePerNight),
+      nights: int.parse(nights),
+      discount: double.parse(discount),
+      taxes: double.parse(taxes),
+      totalPrice: double.parse(totalPrice),
+      paymentMethod: paymentMethod,
+      isPaid: isPaid.toLowerCase() == 'true',
+      bookingDate: DateTime.parse(bookingDate),
+      status: status,
     );
   }
 }

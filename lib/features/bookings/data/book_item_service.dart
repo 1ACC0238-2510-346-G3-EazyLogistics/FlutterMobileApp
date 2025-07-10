@@ -8,6 +8,39 @@ import 'package:http/http.dart' as http;
 class BookItemService {
   final String baseUrl = 'https://logisticsmasters.onrender.com';
 
+  // Método privado para manejar respuestas HTTP y convertir a BookItem
+  Future<BookItem> _processResponse(http.Response response, {BookItem? originalBooking}) {
+    print("Response status: ${response.statusCode}");
+    print("Response body: ${response.body}");
+    
+    if (response.statusCode == HttpStatus.ok || 
+        response.statusCode == HttpStatus.created) {
+      
+      // Si la respuesta está vacía o no es un JSON válido, usar los datos enviados
+      if (response.body.isEmpty && originalBooking != null) {
+        print("Empty response, using original BookItem");
+        return Future.value(originalBooking);
+      }
+      
+      try {
+        final json = jsonDecode(response.body);
+        // Asegurarse de que el ID sea un string
+        if (json['id'] != null && json['id'] is int) {
+          json['id'] = json['id'].toString();
+        }
+        return Future.value(BookItemDto.fromJson(json).toDomain());
+      } catch (parseError) {
+        print("Error parsing response: $parseError");
+        if (originalBooking != null) {
+          return Future.value(originalBooking);
+        }
+        return Future.error(Exception('Error parsing response: $parseError'));
+      }
+    }
+    
+    return Future.error(Exception('HTTP Error: ${response.statusCode}'));
+  }
+
   // Crear una nueva reserva
   Future<BookItem> createBooking(BookItem booking, String userId) async {
     final Uri uri = Uri.parse('$baseUrl/bookings');
@@ -24,34 +57,7 @@ class BookItemService {
         body: jsonEncode(jsonData),
       );
       
-      print("Response status: ${response.statusCode}");
-      print("Response body: ${response.body}");
-      
-      if (response.statusCode == HttpStatus.created || 
-          response.statusCode == HttpStatus.ok) {
-        
-        // Si la respuesta está vacía o no es un JSON válido, usar los datos enviados
-        if (response.body.isEmpty) {
-          print("Empty response, creating BookItem from request data");
-          // Generar un ID temporal si el servidor no lo devuelve
-          return booking;
-        }
-        
-        try {
-          final json = jsonDecode(response.body);
-          // Asegurarse de que el ID sea un string
-          if (json['id'] != null && json['id'] is int) {
-            json['id'] = json['id'].toString();
-          }
-          return BookItemDto.fromJson(json).toDomain();
-        } catch (parseError) {
-          print("Error parsing response: $parseError");
-          // Si hay un error al procesar la respuesta, usar los datos originales
-          return booking;
-        }
-      }
-      
-      throw Exception('Failed to create booking: ${response.statusCode}');
+      return _processResponse(response, originalBooking: booking);
     } catch (e) {
       print("Exception in createBooking: $e");
       
@@ -77,11 +83,14 @@ class BookItemService {
         final List<dynamic> jsonList = jsonDecode(response.body);
         return jsonList
             .map((json) => BookItemDto.fromJson(json).toDomain())
+            .where((booking) => booking.status != 'deleted') // Filtrar elementos eliminados
             .toList();
       }
-      throw Exception('Failed to get user bookings: ${response.statusCode}');
+      
+      throw Exception('Failed to load bookings: ${response.statusCode}');
     } catch (e) {
-      throw Exception('Error fetching user bookings: $e');
+      print("Error in getUserBookings: $e");
+      throw Exception('Error loading bookings: $e');
     }
   }
 
@@ -91,19 +100,15 @@ class BookItemService {
     
     try {
       final response = await http.get(uri);
-      
-      if (response.statusCode == HttpStatus.ok) {
-        final json = jsonDecode(response.body);
-        return BookItemDto.fromJson(json).toDomain();
-      }
-      throw Exception('Failed to get booking: ${response.statusCode}');
+      return _processResponse(response);
     } catch (e) {
+      print("Error in getBooking: $e");
       throw Exception('Error fetching booking: $e');
     }
   }
 
-  // Cancelar una reserva
-  Future<BookItem> cancelBooking(String bookingId) async {
+  // Método privado para actualizar el estado de una reserva
+  Future<BookItem> _updateBookingStatus(String bookingId, String status, {String? userId}) async {
     final Uri uri = Uri.parse('$baseUrl/bookings/$bookingId');
     
     try {
@@ -111,25 +116,51 @@ class BookItemService {
       final getResponse = await http.get(uri);
       
       if (getResponse.statusCode == HttpStatus.ok) {
-        final currentBooking = jsonDecode(getResponse.body);
+        // Obtener los datos actuales de la reserva
+        final Map<String, dynamic> bookingData = jsonDecode(getResponse.body);
         
-        // Actualizamos solo el estado a "cancelled"
-        currentBooking['status'] = 'cancelled';
+        // Verificar que el usuario sea el propietario si se proporciona un userId
+        if (userId != null && 
+            bookingData['userId'] != null && 
+            bookingData['userId'].toString() != userId) {
+          throw Exception('User is not authorized to modify this booking');
+        }
         
+        // Actualizar el estado
+        bookingData['status'] = status;
+        
+        // Actualizar la reserva con el nuevo estado
         final updateResponse = await http.put(
           uri,
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(currentBooking),
+          body: jsonEncode(bookingData),
         );
         
-        if (updateResponse.statusCode == HttpStatus.ok) {
-          final json = jsonDecode(updateResponse.body);
-          return BookItemDto.fromJson(json).toDomain();
-        }
+        return _processResponse(updateResponse);
+      } else {
+        throw Exception('Failed to get booking: ${getResponse.statusCode}');
       }
-      throw Exception('Failed to cancel booking: ${getResponse.statusCode}');
     } catch (e) {
-      throw Exception('Error cancelling booking: $e');
+      print("Error updating booking status to $status: $e");
+      throw Exception('Error updating booking status: $e');
     }
+  }
+
+  // Cancelar una reserva
+  Future<BookItem> cancelBooking(String bookingId) async {
+    return _updateBookingStatus(bookingId, 'cancelled');
+  }
+
+  // Eliminar una reserva (lógicamente)
+  Future<BookItem> deleteBooking(String bookingId, String userId) async {
+    return _updateBookingStatus(bookingId, 'deleted', userId: userId);
+  }
+
+  // Añadir método para restaurar reservas eliminadas
+
+  // Restaurar una reserva eliminada (deshacer eliminación lógica)
+  Future<BookItem> undoDeleteBooking(String bookingId, String userId) async {
+    // Para restaurar, simplemente cambiamos el estado de nuevo a 'completed' o al estado anterior
+    return _updateBookingStatus(bookingId, 'completed', userId: userId);
   }
 }

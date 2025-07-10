@@ -17,7 +17,7 @@ class BookItem {
   final bool isPaid;
   final DateTime bookingDate;
   final double discount;
-  final String? status;
+  String? status; // Quitar 'final' para permitir cambios
 
   BookItem({
     this.id,

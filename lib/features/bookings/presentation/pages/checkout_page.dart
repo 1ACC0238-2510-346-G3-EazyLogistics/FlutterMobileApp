@@ -41,7 +41,8 @@ class CheckoutPage extends StatefulWidget {
 class _CheckoutPageState extends State<CheckoutPage> {
   final BookItemService _bookingService = BookItemService();
   final AuthService _authService = AuthService();
-  String _paymentMethod = 'creditCard';
+  String _paymentMethod = 'visa'; // Cambiado a 'visa' como valor por defecto
+  String _paymentOption = 'full'; // Añadido para rastrear la opción de pago (completo/parcial)
   bool _isProcessing = false;
   String _errorMessage = '';
   
@@ -197,7 +198,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         _buildPaymentOption(
                           title: 'Pay in full',
                           description: 'Pay the total now and you\'re all set.',
-                          value: 'creditCard',
+                          value: 'full',
                         ),
                         
                         const SizedBox(height: 12),
@@ -205,7 +206,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         _buildPaymentOption(
                           title: 'Pay part now, part later',
                           description: 'Pay part now and you\'re all set.',
-                          value: 'paypal',
+                          value: 'partial',
                         ),
                         
                         const SizedBox(height: 24),
@@ -229,11 +230,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                   MaterialPageRoute(builder: (context) => const AddCardPage()),
                                 );
                                 
-                                // Si se añadió una tarjeta correctamente (se devolvió un resultado)
+                                // Si se añadió una tarjeta correctamente
                                 if (result != null && result is Map<String, dynamic>) {
                                   setState(() {
                                     // Actualizar el método de pago según el tipo de tarjeta
-                                    _paymentMethod = 'creditCard'; // O usar result['cardType']
+                                    // Si es Visa o MasterCard, seleccionamos el apropiado
+                                    if (result['cardType'] == 'visa') {
+                                      _paymentMethod = 'visa';
+                                    } else if (result['cardType'] == 'mastercard') {
+                                      _paymentMethod = 'mastercard';
+                                    }
                                     
                                     // Mostrar confirmación al usuario
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -255,27 +261,34 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         ),
                         const SizedBox(height: 8),
                         
-                        // Payment methods
-                        Row(
+                        // Payment methods - Reemplazado con Wrap para mejor presentación
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 10,
                           children: [
                             _buildPaymentMethodCard(
                               image: 'assets/images/visa.png',
-                              isSelected: _paymentMethod == 'creditCard',
+                              value: 'visa',
+                              isSelected: _paymentMethod == 'visa',
+                              onTap: () => setState(() => _paymentMethod = 'visa'),
                             ),
-                            const SizedBox(width: 8),
                             _buildPaymentMethodCard(
                               image: 'assets/images/mastercard.png',
-                              isSelected: false,
+                              value: 'mastercard',
+                              isSelected: _paymentMethod == 'mastercard',
+                              onTap: () => setState(() => _paymentMethod = 'mastercard'),
                             ),
-                            const SizedBox(width: 8),
                             _buildPaymentMethodCard(
                               image: 'assets/images/paypal.png',
+                              value: 'paypal',
                               isSelected: _paymentMethod == 'paypal',
+                              onTap: () => setState(() => _paymentMethod = 'paypal'),
                             ),
-                            const SizedBox(width: 8),
                             _buildPaymentMethodCard(
                               image: 'assets/images/gpay.png',
-                              isSelected: false,
+                              value: 'gpay',
+                              isSelected: _paymentMethod == 'gpay',
+                              onTap: () => setState(() => _paymentMethod = 'gpay'),
                             ),
                           ],
                         ),
@@ -385,9 +398,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: _processBooking,
-                child: const Text(
-                  "Pay Now",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+                child: Text(
+                  _paymentOption == 'full' ? "Pay Now" : "Pay Deposit",
+                  style: const TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
             ),
@@ -433,17 +446,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return InkWell(
       onTap: () {
         setState(() {
-          _paymentMethod = value;
+          _paymentOption = value;
         });
       },
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: _paymentMethod == value
+            color: _paymentOption == value
                 ? ColorPalette.primaryColor
                 : Colors.grey.withOpacity(0.3),
-            width: _paymentMethod == value ? 2 : 1,
+            width: _paymentOption == value ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -451,11 +464,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
           children: [
             Radio<String>(
               value: value,
-              groupValue: _paymentMethod,
+              groupValue: _paymentOption,
               activeColor: ColorPalette.primaryColor,
               onChanged: (newValue) {
                 setState(() {
-                  _paymentMethod = newValue!;
+                  _paymentOption = newValue!;
                 });
               },
             ),
@@ -482,24 +495,31 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  // Método actualizado para permitir tap en las tarjetas de pago
   Widget _buildPaymentMethodCard({
     required String image,
+    required String value,
     required bool isSelected,
+    required VoidCallback onTap,
   }) {
-    return Container(
-      width: 64,
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: isSelected
-              ? ColorPalette.primaryColor
-              : Colors.grey.withOpacity(0.3),
-          width: isSelected ? 2 : 1,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: 70,
+        height: 50,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isSelected
+                ? ColorPalette.primaryColor
+                : Colors.grey.withOpacity(0.3),
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
         ),
-        borderRadius: BorderRadius.circular(8),
+        child: Image.asset(image, fit: BoxFit.contain),
       ),
-      child: Image.asset(image, fit: BoxFit.contain),
     );
   }
 
@@ -540,8 +560,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
         nights: widget.nights,
         taxes: widget.taxes,
         totalPrice: widget.total,
-        paymentMethod: _paymentMethod,
-        isPaid: true,
+        paymentMethod: _paymentMethod, // Esto ahora será 'visa', 'mastercard', etc.
+        isPaid: _paymentOption == 'full', // Solo es totalmente pagado si eligió "Pay in full"
         bookingDate: DateTime.now(),
       );
 
@@ -552,10 +572,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
         throw Exception('User not logged in');
       }
 
-      // Enviar la reserva al servidor - asegurar que el ID se envía como String
+      // Enviar la reserva al servidor
       final createdBooking = await _bookingService.createBooking(
         bookItem,
-        currentUser.id.toString(), // Convertir el ID a String de forma explícita
+        currentUser.id.toString(),
       );
 
       // Simulamos un tiempo de procesamiento

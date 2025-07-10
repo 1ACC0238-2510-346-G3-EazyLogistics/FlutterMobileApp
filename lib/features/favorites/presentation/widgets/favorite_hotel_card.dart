@@ -7,12 +7,39 @@ import 'package:LogisticsMasters/features/favorites/presentation/blocs/favorite_
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class FavoriteHotelCard extends StatelessWidget {
+class FavoriteHotelCard extends StatefulWidget {
   const FavoriteHotelCard({super.key, required this.hotel});
   final FavoriteHotel hotel;
 
   @override
+  State<FavoriteHotelCard> createState() => _FavoriteHotelCardState();
+}
+
+class _FavoriteHotelCardState extends State<FavoriteHotelCard> {
+  bool _isLoading = false;
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      // Mostrar una versión simplificada de la tarjeta con un indicador de carga
+      return Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text('Loading ${widget.hotel.name} details...'),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -25,20 +52,38 @@ class FavoriteHotelCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Image.network(
-                hotel.imageUrl,
+                widget.hotel.imageUrl,
                 width: 100,
                 height: 100,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 100,
+                    height: 100,
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    width: 100,
+                    height: 100,
+                    color: Colors.grey.shade200,
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                },
               ),
             ),
             const SizedBox(width: 16),
+            
             // Información del hotel
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    hotel.name,
+                    widget.hotel.name,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -53,7 +98,7 @@ class FavoriteHotelCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          "${hotel.city}, ${hotel.country}",
+                          "${widget.hotel.city}, ${widget.hotel.country}",
                           style: const TextStyle(color: Colors.grey),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -63,7 +108,7 @@ class FavoriteHotelCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "\$${hotel.pricePerNight}/night",
+                    "\$${widget.hotel.pricePerNight}/night",
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -72,73 +117,95 @@ class FavoriteHotelCard extends StatelessWidget {
                 ],
               ),
             ),
+            
             // Botón de reserva
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ColorPalette.primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              onPressed: () async {
-                // Mostrar indicador de carga
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) => const Center(
-                    child: CircularProgressIndicator(),
+            Tooltip(
+              message: 'Book this hotel',
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColorPalette.primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                );
-                
-                // Obtener detalles completos del hotel
-                final hotelRepository = HotelRepository();
-                final completeHotel = await hotelRepository.getHotelById(hotel.id);
-                
-                // Cerrar indicador de carga
-                if (context.mounted) Navigator.pop(context);
-                
-                if (completeHotel != null && context.mounted) {
-                  // Navegar con el hotel completo Y actualizar al volver
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HotelDetailPage(hotel: completeHotel),
-                    ),
-                  ).then((_) {
-                    // Actualizar la lista de favoritos después de volver
-                    if (context.mounted) {
-                      context.read<FavoriteBloc>().add(GetAllFavoriteEvent());
-                    }
-                  });
-                } else if (context.mounted) {
-                  // Mostrar un mensaje de error
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Could not load hotel details. Using limited information.'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                  
-                  // Navegar con la información limitada que tenemos Y actualizar al volver
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HotelDetailPage(hotel: hotel.toHotel()),
-                    ),
-                  ).then((_) {
-                    // Actualizar la lista de favoritos después de volver
-                    if (context.mounted) {
-                      context.read<FavoriteBloc>().add(GetAllFavoriteEvent());
-                    }
-                  });
-                }
-              },
-              child: const Text('Book', style: TextStyle(color: Colors.white)),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+                onPressed: _navigateToHotelDetail,
+                child: const Text('Book', style: TextStyle(color: Colors.white)),
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _navigateToHotelDetail() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      // Obtener detalles completos del hotel
+      final hotelRepository = HotelRepository();
+      final completeHotel = await hotelRepository.getHotelById(widget.hotel.id);
+      
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (completeHotel != null) {
+        // Navegar con el hotelId en lugar del objeto hotel completo
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HotelDetailPage(hotelId: completeHotel.id),
+          ),
+        );
+        
+        // Actualizar la lista de favoritos después de volver
+        if (mounted) {
+          context.read<FavoriteBloc>().add(GetAllFavoriteEvent());
+        }
+      } else {
+        // Mostrar un mensaje de error
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not load hotel details.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          
+          // Navegar usando el ID del hotel de favoritos
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HotelDetailPage(hotelId: widget.hotel.id),
+            ),
+          );
+          
+          // Actualizar la lista de favoritos después de volver
+          if (mounted) {
+            context.read<FavoriteBloc>().add(GetAllFavoriteEvent());
+          }
+        }
+      }
+    } catch (e) {
+      // Manejar error
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading hotel details: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

@@ -40,7 +40,7 @@ class SearchResultsPage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => HotelDetailPage(hotel: hotel),
+                          builder: (context) => HotelDetailPage(hotelId: hotel.id),
                         ),
                       );
                     },

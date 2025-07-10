@@ -2,6 +2,8 @@ import 'package:LogisticsMasters/core/theme/color_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:LogisticsMasters/features/discover/presentation/pages/discover_page.dart';
 import 'package:LogisticsMasters/features/favorites/presentation/pages/favorites_page.dart';
+import 'package:LogisticsMasters/features/bookings/presentation/pages/bookings_page.dart';
+import 'package:LogisticsMasters/features/profile/presentation/pages/profile_page.dart';
 
 class MainPage extends StatefulWidget {
   final String userName;
@@ -22,8 +24,8 @@ class _MainPageState extends State<MainPage> {
     _pages = [
       DiscoverPage(userName: widget.userName),
       const FavoritesPage(),
-      Center(child: Text('Bookings')),
-      Center(child: Text('Profile')),
+      const BookingsPage(),
+      const ProfilePage(), // Reemplazamos el placeholder con la página real
     ];
   }
 

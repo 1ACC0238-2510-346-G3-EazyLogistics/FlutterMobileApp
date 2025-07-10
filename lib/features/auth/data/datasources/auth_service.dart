@@ -4,10 +4,16 @@ import 'package:LogisticsMasters/features/auth/data/models/user_dto.dart';
 import 'package:LogisticsMasters/features/auth/data/models/user_request_dto.dart';  
 import 'package:LogisticsMasters/features/auth/domain/entities/user.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get_storage/get_storage.dart';
 
 class AuthService {
   static const String _userKey = 'current_user';
+  final GetStorage _storage = GetStorage();
+  
+  // Inicializar GetStorage (llama a este método en el main.dart)
+  static Future<void> init() async {
+    await GetStorage.init();
+  }
   
   Future<User> login(String username, String password) async {
     final Uri uri = Uri.parse('https://dummyjson.com/auth/login');
@@ -23,7 +29,7 @@ class AuthService {
       final json = jsonDecode(response.body);
       final user = UserDto.fromJson(json).toDomain();
       
-      // Guardar el usuario en SharedPreferences
+      // Guardar el usuario en GetStorage
       await _saveUser(user);
       
       return user;
@@ -63,7 +69,7 @@ class AuthService {
         name: "${json['firstName']} ${json['lastName']}",
       );
       
-      // Guardar el usuario en SharedPreferences
+      // Guardar el usuario en GetStorage
       await _saveUser(user);
       
       return user;
@@ -74,7 +80,6 @@ class AuthService {
   
   // Método para guardar el usuario actual
   Future<void> _saveUser(User user) async {
-    final prefs = await SharedPreferences.getInstance();
     final userMap = {
       'id': user.id,
       'email': user.email,
@@ -82,13 +87,12 @@ class AuthService {
       'image': user.image,
       'name': user.name,
     };
-    await prefs.setString(_userKey, jsonEncode(userMap));
+    await _storage.write(_userKey, jsonEncode(userMap));
   }
   
   // Método para obtener el usuario actual
   Future<User?> getCurrentUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userData = prefs.getString(_userKey);
+    final userData = _storage.read(_userKey);
     
     if (userData != null) {
       final userMap = jsonDecode(userData);
@@ -107,7 +111,6 @@ class AuthService {
   
   // Método para cerrar sesión
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_userKey);
+    await _storage.remove(_userKey);
   }
 }

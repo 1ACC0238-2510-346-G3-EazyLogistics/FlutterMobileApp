@@ -117,7 +117,7 @@ class _DiscoverPageState extends State<DiscoverPage> with RouteAware {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => HotelDetailPage(hotel: hotel),
+                                  builder: (context) => HotelDetailPage(hotelId: hotel.id),
                                 ),
                               );
                             },
@@ -191,7 +191,7 @@ class _DiscoverPageState extends State<DiscoverPage> with RouteAware {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => HotelDetailPage(hotel: hotel),
+                                builder: (context) => HotelDetailPage(hotelId: hotel.id),
                               ),
                             );
                           },

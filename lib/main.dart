@@ -7,13 +7,19 @@ import 'package:LogisticsMasters/features/favorites/presentation/blocs/favorite_
 import 'package:flutter/material.dart';
 import 'package:LogisticsMasters/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:LogisticsMasters/features/auth/data/repositories/user_repository.dart';
 
-void main() {
-  runApp(const MainApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializar GetStorage
+  await UserRepository.init();
+  
+  runApp(const MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -45,13 +45,26 @@ class FavoriteHotelDto {
 
   factory FavoriteHotelDto.fromMap(Map<String, dynamic> map) {
     return FavoriteHotelDto(
-      id: map['id'] as String,
+      id: map['id'].toString(),
       name: map['name'] as String,
       imageUrl: map['imageUrl'] as String,
       rating: (map['rating'] as num).toDouble(),
       pricePerNight: map['pricePerNight'] as int,
       country: map['country'] as String,
       city: map['city'] as String,
+    );
+  }
+
+  // Método para mapear desde JSON del backend Spring Boot
+  factory FavoriteHotelDto.fromJson(Map<String, dynamic> json) {
+    return FavoriteHotelDto(
+      id: json['hotelId'].toString(), // Usar hotelId en lugar de id
+      name: json['hotelName'] as String,
+      imageUrl: json['hotelImage'] as String,
+      rating: (json['hotelRating'] as num).toDouble(),
+      pricePerNight: (json['hotelPrice'] as num).toInt(),
+      country: '', // El backend no proporciona país directamente
+      city: json['hotelLocation'] as String,
     );
   }
 

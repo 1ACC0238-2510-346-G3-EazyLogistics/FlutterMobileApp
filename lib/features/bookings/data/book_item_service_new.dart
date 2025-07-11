@@ -50,7 +50,7 @@ class BookItemService {
 
   // Crear una nueva reserva
   Future<BookItem> createBooking(BookItem booking, String userId) async {
-    final Uri uri = Uri.parse('${AppConfig.usersEndpoint}/$userId/bookings');
+    final Uri uri = Uri.parse(AppConfig.bookingsEndpoint);
 
     try {
       final requestDto = BookItemRequestDto.fromDomain(booking, userId);
@@ -93,7 +93,7 @@ class BookItemService {
 
   // Obtener todas las reservas de un usuario
   Future<List<BookItem>> getUserBookings(String userId) async {
-    final Uri uri = Uri.parse('${AppConfig.usersEndpoint}/$userId/bookings');
+    final Uri uri = Uri.parse('${AppConfig.bookingsEndpoint}?userId=$userId');
 
     try {
       final response = await http
@@ -102,23 +102,12 @@ class BookItemService {
 
       if (response.statusCode == HttpStatus.ok) {
         final List<dynamic> jsonList = jsonDecode(response.body);
-
-        final bookings = jsonList
-            .map((json) {
-              try {
-                return BookItemDto.fromJson(json).toDomain();
-              } catch (e) {
-                if (AppConfig.debugMode) {
-                  print("Error parsing booking JSON: $e");
-                }
-                return null;
-              }
-            })
-            .where((booking) => booking != null && booking.status != 'deleted')
-            .cast<BookItem>()
+        return jsonList
+            .map((json) => BookItemDto.fromJson(json).toDomain())
+            .where(
+              (booking) => booking.status != 'deleted',
+            ) // Filtrar elementos eliminados
             .toList();
-
-        return bookings;
       }
 
       throw Exception('Failed to load bookings: ${response.statusCode}');
@@ -131,10 +120,8 @@ class BookItemService {
   }
 
   // Obtener una reserva específica
-  Future<BookItem> getBooking(int userId, String bookingId) async {
-    final Uri uri = Uri.parse(
-      '${AppConfig.usersEndpoint}/$userId/bookings/$bookingId',
-    );
+  Future<BookItem> getBooking(String bookingId) async {
+    final Uri uri = Uri.parse('${AppConfig.bookingsEndpoint}/$bookingId');
 
     try {
       final response = await http
@@ -151,14 +138,11 @@ class BookItemService {
 
   // Método privado para actualizar el estado de una reserva
   Future<BookItem> _updateBookingStatus(
-    int userId,
     String bookingId,
     String status, {
-    String? userIdAuth,
+    String? userId,
   }) async {
-    final Uri uri = Uri.parse(
-      '${AppConfig.usersEndpoint}/$userId/bookings/$bookingId',
-    );
+    final Uri uri = Uri.parse('${AppConfig.bookingsEndpoint}/$bookingId');
 
     try {
       // Primero obtenemos la reserva actual
@@ -170,10 +154,10 @@ class BookItemService {
         // Obtener los datos actuales de la reserva
         final Map<String, dynamic> bookingData = jsonDecode(getResponse.body);
 
-        // Verificar que el usuario sea el propietario si se proporciona un userIdAuth
-        if (userIdAuth != null &&
+        // Verificar que el usuario sea el propietario si se proporciona un userId
+        if (userId != null &&
             bookingData['userId'] != null &&
-            bookingData['userId'].toString() != userIdAuth) {
+            bookingData['userId'].toString() != userId) {
           throw Exception('User is not authorized to modify this booking');
         }
 
@@ -202,36 +186,18 @@ class BookItemService {
   }
 
   // Cancelar una reserva
-  Future<BookItem> cancelBooking(int userId, String bookingId) async {
-    return _updateBookingStatus(userId, bookingId, 'cancelled');
+  Future<BookItem> cancelBooking(String bookingId) async {
+    return _updateBookingStatus(bookingId, 'cancelled');
   }
 
   // Eliminar una reserva (lógicamente)
-  Future<BookItem> deleteBooking(
-    int userId,
-    String bookingId,
-    String userIdAuth,
-  ) async {
-    return _updateBookingStatus(
-      userId,
-      bookingId,
-      'deleted',
-      userIdAuth: userIdAuth,
-    );
+  Future<BookItem> deleteBooking(String bookingId, String userId) async {
+    return _updateBookingStatus(bookingId, 'deleted', userId: userId);
   }
 
   // Restaurar una reserva eliminada (deshacer eliminación lógica)
-  Future<BookItem> undoDeleteBooking(
-    int userId,
-    String bookingId,
-    String userIdAuth,
-  ) async {
+  Future<BookItem> undoDeleteBooking(String bookingId, String userId) async {
     // Para restaurar, simplemente cambiamos el estado de nuevo a 'completed' o al estado anterior
-    return _updateBookingStatus(
-      userId,
-      bookingId,
-      'completed',
-      userIdAuth: userIdAuth,
-    );
+    return _updateBookingStatus(bookingId, 'completed', userId: userId);
   }
 }

@@ -24,7 +24,7 @@ class FavoriteHotelRepository {
     // Primero buscar el favorito en el backend
     final favorite = await _service.getFavoriteByHotelId(userId, id);
     if (favorite != null) {
-      await _service.removeFromFavorites(userId, favorite.id);
+      await _service.removeFromFavorites(favorite.id);
     }
   }
 

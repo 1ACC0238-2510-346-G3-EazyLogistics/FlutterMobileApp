@@ -1,4 +1,5 @@
 import 'package:LogisticsMasters/core/theme/color_palette.dart';
+import 'package:LogisticsMasters/features/auth/data/datasources/auth_service.dart';
 import 'package:LogisticsMasters/features/bookings/data/book_item_service.dart';
 import 'package:LogisticsMasters/features/bookings/domain/book_item.dart';
 import 'package:LogisticsMasters/features/bookings/presentation/pages/booking_detail.dart';
@@ -10,10 +11,10 @@ class BookingCard extends StatefulWidget {
   final BookItem booking;
   final bool isUpcoming;
   final VoidCallback onRefresh;
-  
+
   const BookingCard({
-    super.key, 
-    required this.booking, 
+    super.key,
+    required this.booking,
     required this.isUpcoming,
     required this.onRefresh,
   });
@@ -35,7 +36,7 @@ class _BookingCardState extends State<BookingCard> {
   @override
   Widget build(BuildContext context) {
     final DateFormat dateFormat = DateFormat('MMM dd, yyyy, hh:mm a');
-    
+
     if (_isCancelling) {
       // Mostrar un indicador de carga dentro del card en lugar de un diálogo
       return Container(
@@ -64,7 +65,7 @@ class _BookingCardState extends State<BookingCard> {
         ),
       );
     }
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -96,7 +97,10 @@ class _BookingCardState extends State<BookingCard> {
                 ),
                 if (booking.status == 'cancelled')
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red.shade50,
                       borderRadius: BorderRadius.circular(4),
@@ -114,19 +118,16 @@ class _BookingCardState extends State<BookingCard> {
               ],
             ),
           ),
-          
+
           // Booking date
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: Text(
               'Booking Date: ${dateFormat.format(booking.checkInDate)} - ${dateFormat.format(booking.checkOutDate)}',
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ),
-          
+
           // Hotel info
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -144,13 +145,16 @@ class _BookingCardState extends State<BookingCard> {
                       width: 80,
                       height: 60,
                       color: Colors.grey.shade200,
-                      child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 // Hotel details
                 Expanded(
                   child: Column(
@@ -179,17 +183,24 @@ class _BookingCardState extends State<BookingCard> {
                           const SizedBox(width: 2),
                           Text(
                             '(115 Reviews)', // Idealmente, obtener el número real de reseñas
-                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 4),
-                      
+
                       // Location
                       Row(
                         children: [
-                          const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                          const Icon(
+                            Icons.location_on,
+                            size: 14,
+                            color: Colors.grey,
+                          ),
                           const SizedBox(width: 2),
                           Expanded(
                             child: Text(
@@ -210,7 +221,7 @@ class _BookingCardState extends State<BookingCard> {
               ],
             ),
           ),
-          
+
           // Action buttons
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -227,7 +238,10 @@ class _BookingCardState extends State<BookingCard> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('Cancel', style: TextStyle(color: Colors.black)),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: Colors.black),
+                    ),
                   )
                 else if (!widget.isUpcoming && booking.status != 'cancelled')
                   // Write a Review button for past bookings
@@ -242,7 +256,10 @@ class _BookingCardState extends State<BookingCard> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('Write a Review', style: TextStyle(color: Colors.black)),
+                    child: const Text(
+                      'Write a Review',
+                      style: TextStyle(color: Colors.black),
+                    ),
                   )
                 else
                   // Si está cancelada, mostrar un botón deshabilitado
@@ -254,9 +271,12 @@ class _BookingCardState extends State<BookingCard> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text('Cancelled', style: TextStyle(color: Colors.grey.shade400)),
+                    child: Text(
+                      'Cancelled',
+                      style: TextStyle(color: Colors.grey.shade400),
+                    ),
                   ),
-              
+
                 // View Details o Book Again
                 ElevatedButton(
                   onPressed: () {
@@ -265,7 +285,8 @@ class _BookingCardState extends State<BookingCard> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => BookingDetailPage(booking: booking),
+                          builder: (context) =>
+                              BookingDetailPage(booking: booking),
                         ),
                       ).then((result) {
                         // Si recibimos true como resultado, refrescar la lista
@@ -287,14 +308,17 @@ class _BookingCardState extends State<BookingCard> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: booking.status == 'cancelled' ? 
-                      ColorPalette.primaryColor : ColorPalette.primaryColor,
+                    backgroundColor: booking.status == 'cancelled'
+                        ? ColorPalette.primaryColor
+                        : ColorPalette.primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: Text(
-                    booking.status == 'cancelled' ? 'Book Again' : 'View Details', 
+                    booking.status == 'cancelled'
+                        ? 'Book Again'
+                        : 'View Details',
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -336,20 +360,27 @@ class _BookingCardState extends State<BookingCard> {
     setState(() {
       _isCancelling = true;
     });
-    
+
     try {
       final service = BookItemService();
-      await service.cancelBooking(booking.id!);
-      
+      final authService = AuthService();
+      final currentUser = await authService.getCurrentUser();
+
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      await service.cancelBooking(currentUser.id, booking.id!);
+
       // Esperar un momento para asegurar que la operación se haya completado
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Actualizar el estado local de la reserva
       setState(() {
         booking.status = 'cancelled';
         _isCancelling = false;
       });
-      
+
       // Mostrar mensaje de éxito
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -359,18 +390,17 @@ class _BookingCardState extends State<BookingCard> {
           ),
         );
       }
-      
+
       // Refrescar la lista completa
       widget.onRefresh();
-      
     } catch (e) {
       print("Error cancelling booking: $e");
-      
+
       // Desactivar el indicador de carga
       setState(() {
         _isCancelling = false;
       });
-      
+
       // Mostrar mensaje de error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

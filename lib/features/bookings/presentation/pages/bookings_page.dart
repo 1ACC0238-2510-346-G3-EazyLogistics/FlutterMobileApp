@@ -13,7 +13,8 @@ class BookingsPage extends StatefulWidget {
   State<BookingsPage> createState() => _BookingsPageState();
 }
 
-class _BookingsPageState extends State<BookingsPage> with SingleTickerProviderStateMixin {
+class _BookingsPageState extends State<BookingsPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final BookItemService _bookingService = BookItemService();
   final AuthService _authService = AuthService();
@@ -36,7 +37,7 @@ class _BookingsPageState extends State<BookingsPage> with SingleTickerProviderSt
 
   Future<void> _loadBookings() async {
     if (!mounted) return;
-    
+
     try {
       setState(() {
         _isLoading = true;
@@ -50,17 +51,19 @@ class _BookingsPageState extends State<BookingsPage> with SingleTickerProviderSt
       }
 
       // Cargar las reservas del usuario
-      final bookings = await _bookingService.getUserBookings(currentUser.id.toString());
-      
+      final bookings = await _bookingService.getUserBookings(
+        currentUser.id.toString(),
+      );
+
       if (!mounted) return;
-      
+
       setState(() {
         _bookings = bookings;
         _isLoading = false;
       });
     } catch (e) {
       if (!mounted) return;
-      
+
       setState(() {
         _errorMessage = 'Failed to load bookings: ${e.toString()}';
         _isLoading = false;
@@ -71,21 +74,27 @@ class _BookingsPageState extends State<BookingsPage> with SingleTickerProviderSt
   // Filtrar reservas próximas (fecha checkout >= hoy y no canceladas)
   List<BookItem> get _upcomingBookings {
     final now = DateTime.now();
-    return _bookings.where((booking) => 
-      (booking.checkOutDate.isAfter(now) || 
-       DateUtils.isSameDay(booking.checkOutDate, now)) && 
-      booking.status != 'cancelled'
-    ).toList();
+    return _bookings
+        .where(
+          (booking) =>
+              (booking.checkOutDate.isAfter(now) ||
+                  DateUtils.isSameDay(booking.checkOutDate, now)) &&
+              booking.status != 'cancelled',
+        )
+        .toList();
   }
 
   // Filtrar reservas pasadas (fecha checkout < hoy o canceladas)
   List<BookItem> get _pastBookings {
     final now = DateTime.now();
-    return _bookings.where((booking) => 
-      (booking.checkOutDate.isBefore(now) && 
-      !DateUtils.isSameDay(booking.checkOutDate, now)) || 
-      booking.status == 'cancelled'
-    ).toList();
+    return _bookings
+        .where(
+          (booking) =>
+              (booking.checkOutDate.isBefore(now) &&
+                  !DateUtils.isSameDay(booking.checkOutDate, now)) ||
+              booking.status == 'cancelled',
+        )
+        .toList();
   }
 
   // Método para manejar eliminación y actualización de la UI
@@ -96,27 +105,27 @@ class _BookingsPageState extends State<BookingsPage> with SingleTickerProviderSt
       if (currentUser == null) {
         throw Exception('User not logged in');
       }
-      
+
       // Eliminar la reserva de la lista local primero para feedback inmediato
       setState(() {
         _bookings.removeWhere((item) => item.id == booking.id);
       });
-      
+
       // Intentar eliminar en el servidor
-      BookItem deletedBooking;
       try {
-        deletedBooking = await _bookingService.deleteBooking(
-          booking.id ?? 'unknown-booking', 
-          currentUser.id.toString()
+        await _bookingService.deleteBooking(
+          currentUser.id,
+          booking.id ?? 'unknown-booking',
+          currentUser.id.toString(),
         );
       } catch (e) {
         // Si falla la eliminación en el servidor, volver a añadir a la lista local
         setState(() {
           _bookings.add(booking);
         });
-        throw e;  // Relanzar para mostrar mensaje de error
+        throw e; // Relanzar para mostrar mensaje de error
       }
-      
+
       // Mostrar mensaje con opción para deshacer
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -130,12 +139,13 @@ class _BookingsPageState extends State<BookingsPage> with SingleTickerProviderSt
                 setState(() {
                   _bookings.add(booking);
                 });
-                
+
                 try {
                   // Restaurar en el servidor
                   await _bookingService.undoDeleteBooking(
-                    booking.id ?? 'unknown-booking', 
-                    currentUser.id.toString()
+                    currentUser.id,
+                    booking.id ?? 'unknown-booking',
+                    currentUser.id.toString(),
                   );
                 } catch (e) {
                   // Si falla, volver a cargar todas las reservas
@@ -183,27 +193,30 @@ class _BookingsPageState extends State<BookingsPage> with SingleTickerProviderSt
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
       ),
-      body: _isLoading 
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(child: Text(_errorMessage!))
-              : RefreshIndicator(
-                  onRefresh: _loadBookings,
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      // Upcoming bookings tab
-                      _buildBookingsList(_upcomingBookings, isUpcoming: true),
-                      
-                      // Past bookings tab
-                      _buildBookingsList(_pastBookings, isUpcoming: false),
-                    ],
-                  ),
-                ),
+          ? Center(child: Text(_errorMessage!))
+          : RefreshIndicator(
+              onRefresh: _loadBookings,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Upcoming bookings tab
+                  _buildBookingsList(_upcomingBookings, isUpcoming: true),
+
+                  // Past bookings tab
+                  _buildBookingsList(_pastBookings, isUpcoming: false),
+                ],
+              ),
+            ),
     );
   }
 
-  Widget _buildBookingsList(List<BookItem> bookings, {required bool isUpcoming}) {
+  Widget _buildBookingsList(
+    List<BookItem> bookings, {
+    required bool isUpcoming,
+  }) {
     if (bookings.isEmpty) {
       return Center(
         child: Column(
@@ -216,23 +229,15 @@ class _BookingsPageState extends State<BookingsPage> with SingleTickerProviderSt
             ),
             const SizedBox(height: 16),
             Text(
-              isUpcoming 
-                  ? 'No upcoming bookings'
-                  : 'No past bookings',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey.shade600,
-              ),
+              isUpcoming ? 'No upcoming bookings' : 'No past bookings',
+              style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 8),
             Text(
-              isUpcoming 
+              isUpcoming
                   ? 'Explore hotels to make a new booking'
                   : 'Your booking history will appear here',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade500,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
               textAlign: TextAlign.center,
             ),
           ],
@@ -245,7 +250,7 @@ class _BookingsPageState extends State<BookingsPage> with SingleTickerProviderSt
       itemCount: bookings.length,
       itemBuilder: (context, index) {
         final booking = bookings[index];
-        
+
         // Si es una reserva pasada, permitir deslizar para eliminar
         if (!isUpcoming) {
           return Padding(
@@ -276,7 +281,9 @@ class _BookingsPageState extends State<BookingsPage> with SingleTickerProviderSt
                   builder: (BuildContext context) {
                     return AlertDialog(
                       title: const Text('Remove Booking'),
-                      content: const Text('Are you sure you want to remove this booking from your history?'),
+                      content: const Text(
+                        'Are you sure you want to remove this booking from your history?',
+                      ),
                       actions: <Widget>[
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(false),
@@ -284,7 +291,10 @@ class _BookingsPageState extends State<BookingsPage> with SingleTickerProviderSt
                         ),
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(true),
-                          child: const Text('Remove', style: TextStyle(color: Colors.red)),
+                          child: const Text(
+                            'Remove',
+                            style: TextStyle(color: Colors.red),
+                          ),
                         ),
                       ],
                     );

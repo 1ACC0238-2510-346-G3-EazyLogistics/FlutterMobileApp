@@ -8,8 +8,8 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
 
   // Usa inyección de dependencias para facilitar testing
   FavoriteBloc({required FavoriteHotelRepository repository})
-      : _repository = repository,
-        super(InitialFavoriteState()) {
+    : _repository = repository,
+      super(InitialFavoriteState()) {
     on<AddFavoriteEvent>(_onAddFavorite);
     on<RemoveFavoriteEvent>(_onRemoveFavorite);
     on<GetAllFavoriteEvent>(_onGetAllFavorites);
@@ -18,11 +18,15 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
 
   // Separa la lógica en métodos privados para mejor organización
   Future<void> _onAddFavorite(
-      AddFavoriteEvent event, Emitter<FavoriteState> emit) async {
+    AddFavoriteEvent event,
+    Emitter<FavoriteState> emit,
+  ) async {
     emit(LoadingFavoriteState()); // Agrega un estado de carga
     try {
-      await _repository.insertFavoriteHotel(event.favoriteHotel);
-      final favorites = await _repository.getAllFavoriteHotels();
+      final userId =
+          event.userId ?? '1'; // Valor por defecto para compatibilidad
+      await _repository.insertFavoriteHotel(event.favoriteHotel, userId);
+      final favorites = await _repository.getAllFavoriteHotels(userId);
       emit(LoadedFavoriteState(favorites: favorites));
     } catch (e) {
       emit(ErrorFavoriteState(message: e.toString()));
@@ -30,11 +34,15 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
   }
 
   Future<void> _onRemoveFavorite(
-      RemoveFavoriteEvent event, Emitter<FavoriteState> emit) async {
+    RemoveFavoriteEvent event,
+    Emitter<FavoriteState> emit,
+  ) async {
     emit(LoadingFavoriteState());
     try {
-      await _repository.deleteFavoriteHotel(event.id);
-      final favorites = await _repository.getAllFavoriteHotels();
+      final userId =
+          event.userId ?? '1'; // Valor por defecto para compatibilidad
+      await _repository.deleteFavoriteHotel(event.id, userId);
+      final favorites = await _repository.getAllFavoriteHotels(userId);
       emit(LoadedFavoriteState(favorites: favorites));
     } catch (e) {
       emit(ErrorFavoriteState(message: e.toString()));
@@ -42,10 +50,14 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
   }
 
   Future<void> _onGetAllFavorites(
-      GetAllFavoriteEvent event, Emitter<FavoriteState> emit) async {
+    GetAllFavoriteEvent event,
+    Emitter<FavoriteState> emit,
+  ) async {
     emit(LoadingFavoriteState());
     try {
-      final favorites = await _repository.getAllFavoriteHotels();
+      final userId =
+          event.userId ?? '1'; // Valor por defecto para compatibilidad
+      final favorites = await _repository.getAllFavoriteHotels(userId);
       emit(LoadedFavoriteState(favorites: favorites));
     } catch (e) {
       emit(ErrorFavoriteState(message: e.toString()));
@@ -54,9 +66,13 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
 
   // Método para verificar si un hotel es favorito
   Future<void> _onCheckIsFavorite(
-      CheckIsFavoriteEvent event, Emitter<FavoriteState> emit) async {
+    CheckIsFavoriteEvent event,
+    Emitter<FavoriteState> emit,
+  ) async {
     try {
-      final isFavorite = await _repository.isFavorite(event.id);
+      final userId =
+          event.userId ?? '1'; // Valor por defecto para compatibilidad
+      final isFavorite = await _repository.isFavorite(event.id, userId);
       emit(IsFavoriteState(isFavorite: isFavorite, id: event.id));
     } catch (e) {
       emit(ErrorFavoriteState(message: e.toString()));
